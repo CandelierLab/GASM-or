@@ -45,6 +45,9 @@ html_context = {"default_mode": "dark"}
 autodoc_member_order = "bysource"
 autodoc_typehints = "description"
 autoclass_content = "both"
+# pyopencl is an optional dependency (GPU back-end) and is not installed in the
+# documentation build environment, so mock it to let autodoc import gasm.gpu.core.
+autodoc_mock_imports = ["pyopencl"]
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
