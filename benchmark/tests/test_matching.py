@@ -72,6 +72,31 @@ def test_attributes_only(tree):
     assert M.accuracy(gt) == 1.0
 
 
+# -- precomputed similarity matrices ------------------------------------
+
+
+def test_vertex_matrices_injection():
+    # An identity vertex similarity matrix breaks the reversal symmetry of a
+    # path graph and forces the identity matching.
+    G = nx.path_graph(5)
+    M = _match(G, G, vertex_matrices=np.eye(5))
+    for i in range(5):
+        assert M.matchup_A(i) == i
+
+
+def test_vertex_matrices_clip_warns():
+    G = nx.path_graph(4)
+    bad = np.full((4, 4), 2.0)
+    with pytest.warns(gasm.utils.AttributeWarning):
+        gasm.match(G, G, platform="CPU", seed=0, vertex_matrices=bad)
+
+
+def test_vertex_matrices_shape_raises():
+    G = nx.path_graph(4)
+    with pytest.raises(ValueError):
+        gasm.match(G, G, platform="CPU", vertex_matrices=np.eye(3))
+
+
 # -- LAP solvers ---------------------------------------------------------
 
 

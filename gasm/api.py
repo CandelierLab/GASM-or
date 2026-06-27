@@ -18,6 +18,8 @@ def match(
     *,
     platform: str = "GPU",
     attributes=None,
+    vertex_matrices=None,
+    edge_matrices=None,
     structure: bool = True,
     complement: bool = True,
     lap: str = "auto",
@@ -46,6 +48,18 @@ def match(
         ``None`` for a purely structural matching, or a list of
         :class:`gasm.Attribute` (or equivalent dicts) describing the vertex and
         edge attributes to use, each with its uncertainty ``rho``.
+    vertex_matrices:
+        Optional precomputed vertex similarity matrix of shape ``(nA, nB)``, or a
+        sequence of such matrices, injected directly as extra Hadamard factors of
+        the vertex distance matrix ``V`` (eq. 9). Rows follow the ``G1`` node
+        order, columns the ``G2`` node order. Values must lie in ``[0, 1]`` and
+        are clipped otherwise.
+    edge_matrices:
+        Optional precomputed edge similarity matrix of shape ``(mA, mB)``, or a
+        sequence of such matrices, injected directly as extra Hadamard factors of
+        the edge distance matrix ``E`` (eq. 10). Rows follow the ``G1`` edge
+        order, columns the ``G2`` edge order. Values must lie in ``[0, 1]`` and
+        are clipped otherwise.
     structure:
         When ``False``, ignore the graph structure and match on attributes only.
     complement:
@@ -94,7 +108,8 @@ def match(
     if G1.number_of_nodes() == 0 or G2.number_of_nodes() == 0:
         raise ValueError("Both graphs must have at least one vertex.")
 
-    if not structure and not attributes:
+    has_info = bool(attributes) or vertex_matrices is not None or edge_matrices is not None
+    if not structure and not has_info:
         warn(
             "structure=False with no attributes: the matching has no information "
             "to rely on and will be arbitrary.",
@@ -103,7 +118,9 @@ def match(
 
     ga = from_networkx(G1)
     gb = from_networkx(G2)
-    V, E = attr_mod.build_matrices(attributes, ga, gb)
+    V, E = attr_mod.build_matrices(
+        attributes, ga, gb, vertex_matrices=vertex_matrices, edge_matrices=edge_matrices
+    )
 
     options = dict(
         structure=structure,

@@ -141,7 +141,45 @@ def _attribute_matrix(spec: Attribute, ga: Graph, gb: Graph):
     return _categorical_matrix(va, vb, rho)
 
 
-def build_matrices(specs, ga: Graph, gb: Graph):
+def _coerce_matrices(mats, shape, on: str):
+    """Validate and normalise user-provided similarity matrices.
+
+    Accepts a single 2D array or an iterable of 2D arrays, each of the expected
+    ``shape``. Values are clipped to ``[0, 1]`` (eq. 9-10 require the factors to
+    lie in this interval); out-of-range values trigger an
+    :class:`~gasm.utils.AttributeWarning`.
+    """
+    arr = np.asarray(mats, dtype=np.float64)
+    # A single matrix is wrapped into a one-element list; a stack/list of
+    # matrices keeps its leading axis.
+    if arr.ndim == 2:
+        stack = [arr]
+    elif arr.ndim == 3:
+        stack = list(arr)
+    else:
+        raise ValueError(
+            f"{on} matrices must be a 2D array or a sequence of 2D arrays."
+        )
+
+    out = []
+    for A in stack:
+        if A.shape != shape:
+            raise ValueError(
+                f"{on} matrix has shape {A.shape}, expected {shape} "
+                "(rows follow G1 node/edge order, columns follow G2)."
+            )
+        if A.min() < 0.0 or A.max() > 1.0:
+            warn(
+                f"{on} matrix has values outside [0, 1]; clipping to the "
+                "interval required by eq. (9-10).",
+                AttributeWarning,
+            )
+            A = np.clip(A, 0.0, 1.0)
+        out.append(A)
+    return out
+
+
+def build_matrices(specs, ga: Graph, gb: Graph, vertex_matrices=None, edge_matrices=None):
     """Build the vertex (``V``) and edge (``E``) distance matrices.
 
     Parameters
@@ -150,6 +188,16 @@ def build_matrices(specs, ga: Graph, gb: Graph):
         Iterable of :class:`Attribute` or dict specifications, or ``None``.
     ga, gb:
         The two graphs being matched.
+    vertex_matrices:
+        Optional precomputed vertex similarity matrix of shape ``(nA, nB)``, or
+        a sequence of such matrices, injected directly as extra Hadamard factors
+        of ``V`` (eq. 9). Rows follow the ``ga`` node order, columns the ``gb``
+        node order. Values must lie in ``[0, 1]`` and are clipped otherwise.
+    edge_matrices:
+        Optional precomputed edge similarity matrix of shape ``(mA, mB)``, or a
+        sequence of such matrices, injected directly as extra Hadamard factors of
+        ``E`` (eq. 10). Rows follow the ``ga`` edge order, columns the ``gb``
+        edge order. Values must lie in ``[0, 1]`` and are clipped otherwise.
 
     Returns
     -------
@@ -163,14 +211,21 @@ def build_matrices(specs, ga: Graph, gb: Graph):
     V = np.ones((ga.n, gb.n), dtype=np.float64)
     E = np.ones((ga.m, gb.m), dtype=np.float64)
 
-    if not specs:
-        return V, E
+    if specs:
+        for spec in specs:
+            spec = _coerce(spec)
+            A = _attribute_matrix(spec, ga, gb)
+            if spec.on == "vertex":
+                V *= A
+            else:
+                E *= A
 
-    for spec in specs:
-        spec = _coerce(spec)
-        A = _attribute_matrix(spec, ga, gb)
-        if spec.on == "vertex":
+    if vertex_matrices is not None:
+        for A in _coerce_matrices(vertex_matrices, (ga.n, gb.n), "vertex"):
             V *= A
-        else:
+
+    if edge_matrices is not None:
+        for A in _coerce_matrices(edge_matrices, (ga.m, gb.m), "edge"):
             E *= A
+
     return V, E

@@ -35,6 +35,27 @@ uncertainty ``rho``:
 Set ``structure=False`` to match on attributes only. The vertex and edge
 similarity matrices are assembled by :func:`gasm.attributes.build_matrices`.
 
+Injecting precomputed similarity matrices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes a similarity between vertices (or edges) is already available as a
+matrix rather than as a per-element attribute -- for instance a temporal
+correlation matrix between dynamic vertex quantities. Such matrices can be fed
+directly to :func:`gasm.match` through ``vertex_matrices`` and
+``edge_matrices``, bypassing the :class:`gasm.Attribute` machinery. They are
+injected as additional Hadamard factors :math:`\mathcal{A}_i` of ``V`` (eq. 9)
+and ``E`` (eq. 10):
+
+* ``vertex_matrices`` expects a matrix of shape :math:`(n_A, n_B)` (or a list of
+  them); rows follow the ``G1`` node order, columns the ``G2`` node order.
+* ``edge_matrices`` expects a matrix of shape :math:`(m_A, m_B)` (or a list of
+  them); rows follow the ``G1`` edge order, columns the ``G2`` edge order.
+
+Values must lie in :math:`[0, 1]`, with ``0`` meaning dissimilar and ``1``
+meaning similar; out-of-range values are clipped with a
+:class:`gasm.utils.AttributeWarning`. Precomputed matrices and
+:class:`gasm.Attribute` specifications can be combined freely.
+
 The complement procedure
 ------------------------
 
