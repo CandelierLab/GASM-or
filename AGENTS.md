@@ -32,6 +32,6 @@
 
 ### Technical notes
 - The documentation is generated with sphinx. Use `sphinx-build doc/source/ doc/build` to build the documentation.
-- Before every documentation building, check that the version number (release) in doc/source/conf.py is incremented with respect to the version number (VERSION) in setup.py.
+- The single source of truth for the version number is `version` in setup.py-equivalent `pyproject.toml`. `doc/source/conf.py` reads `release` from the installed package, so install the package (e.g. `pip install -e .`) before building, and bump the version in `pyproject.toml` for each release.
 - Build the documentation every time you make modifications to the source folder.
 - All references to modules, classes, methods or functions in the documentation should be hyperlinks pointing to the corresponding element in the API reference.

@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "GASM-or"
+version = "0.1.0"
+description = "Graph Attributes and Structure Matching (GASM): graph matching on CPU and GPU."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Raphaël Candelier", email = "raphael.candelier@sorbonne-universite.fr" },
+]
+keywords = [
+    "graph matching",
+    "graph similarity",
+    "quadratic assignment",
+    "linear assignment",
+    "networkx",
+    "GPU",
+    "OpenCL",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "numpy>=1.23",
+    "scipy>=1.9",
+    "networkx>=2.8",
+]
+
+[project.optional-dependencies]
+gpu = ["pyopencl>=2022.1"]
+benchmark = ["matplotlib>=3.6"]
+doc = ["sphinx>=7.0", "furo>=2023.0"]
+test = ["pytest>=7.0"]
+dev = [
+    "pyopencl>=2022.1",
+    "matplotlib>=3.6",
+    "sphinx>=7.0",
+    "furo>=2023.0",
+    "pytest>=7.0",
+    "build>=1.0",
+    "twine>=4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/CandelierLab/GASM-or"
+Documentation = "https://candelierlab.github.io/GASM-or/"
+Repository = "https://github.com/CandelierLab/GASM-or.git"
+Issues = "https://github.com/CandelierLab/GASM-or/issues"
+
+[tool.setuptools.packages.find]
+include = ["gasm*"]
+
+[tool.setuptools.package-data]
+"gasm.gpu" = ["kernels/*.cl"]
+
+[tool.pytest.ini_options]
+testpaths = ["benchmark/tests"]

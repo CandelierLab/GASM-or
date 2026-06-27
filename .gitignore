@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation build
+doc/build/
+
+# Benchmark outputs
+benchmark/*.png
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Draft / scratch
+TO_PROMPT.md
